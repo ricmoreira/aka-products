@@ -1,11 +1,13 @@
 package products.controllers;
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import products.model.Product;
+import products.model.ProductUpdate;
 import products.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController()
@@ -17,36 +19,45 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @GetMapping()
-    public List<Product> getProducts(){
-        ArrayList<Product> products = new ArrayList<>();
-        products.add(new Product("id1", "name 1", 1.00));
-        products.add(new Product("id2", "name 1", 1.00));
-        products.add(new Product("id3", "name 1", 1.00));
-
-        return products;
-      //  return productService.list();
-    }
-
-    @GetMapping("/one")
-    public Product getOneProduct(){
-        return productService.getOne();
-    }
-
     @PostMapping()
-    public Product createProducts(@RequestBody Product product){
-        return product;
-    }
-
-    @PutMapping()
-    public Product updateProducts(@PathVariable String id, @RequestBody Product product){
-        return product;
+    @ResponseStatus(HttpStatus.CREATED)
+    public String insert(@RequestBody Product product){
+        return this.productService.insert(product);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteProducts(@PathVariable String id){
+    public String delete(HttpServletResponse servletResponse, @PathVariable String id){
+        try {
+            return productService.delete(id);
+        } catch (Exception e) {
+            servletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
 
-        return "deleted product";
     }
 
+    @GetMapping()
+    public List<Product> getAll(){
+        return productService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public Product getOne(HttpServletResponse servletResponse, @PathVariable String id){
+        try {
+            return productService.getOne(id);
+        } catch (Exception e) {
+            servletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
+    }
+
+    @PutMapping("/{id}")
+    public Product update(HttpServletResponse servletResponse, @PathVariable String id, @RequestBody ProductUpdate productUpdateDTO){
+        try {
+            return productService.update(id, productUpdateDTO);
+        } catch (Exception e) {
+            servletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
+    }
 }
